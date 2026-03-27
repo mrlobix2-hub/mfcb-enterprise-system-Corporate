@@ -1,0 +1,50 @@
+
+{% extends 'base.html' %}
+{% block title %}Internal Users | MFCB{% endblock %}
+{% block content %}
+<section class="container">
+  <div class="page-header"><span class="badge badge-soft">Director Control</span><h1 class="mt-3">Internal User Management</h1></div>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card soft-card"><div class="card-body">
+        <form method="post" class="row g-3">
+          <div class="col-12"><label class="form-label">Full Name</label><input name="full_name" class="form-control" required></div>
+          <div class="col-12"><label class="form-label">Username</label><input name="username" class="form-control" required></div>
+          <div class="col-12"><label class="form-label">Password</label><input name="password" class="form-control" required></div>
+          <div class="col-12"><label class="form-label">Role</label><select name="role" class="form-select"><option value="manager">Manager</option><option value="operator">Data Entry Operator</option></select></div>
+          <div class="col-12 form-check ms-2"><input class="form-check-input" type="checkbox" name="is_active" checked><label class="form-check-label">Active</label></div>
+          <div class="col-12 d-grid"><button class="btn btn-primary">Create Internal User</button></div>
+        </form>
+      </div></div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card soft-card"><div class="card-body table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Full Name</th><th>Username</th><th>Role</th><th>Status</th><th>Controls</th></tr></thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>{{ u.full_name }}</td>
+              <td>{{ u.username }}</td>
+              <td>{{ u.role }}</td>
+              <td>{{ 'Active' if u.is_active else 'Inactive' }}</td>
+              <td>
+                <form method="post" action="{{ url_for('toggle_internal_user', user_id=u.id) }}" class="d-inline"><button class="btn btn-sm btn-outline-primary">Toggle</button></form>
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#reset{{ u.id }}">Reset</button>
+              </td>
+            </tr>
+            <tr class="collapse" id="reset{{ u.id }}"><td colspan="5">
+              <form method="post" action="{{ url_for('reset_internal_user', user_id=u.id) }}" class="row g-2">
+                <div class="col-md-5"><input class="form-control" name="username" value="{{ u.username }}"></div>
+                <div class="col-md-5"><input class="form-control" name="password" placeholder="New password"></div>
+                <div class="col-md-2 d-grid"><button class="btn btn-warning">Save</button></div>
+              </form>
+            </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

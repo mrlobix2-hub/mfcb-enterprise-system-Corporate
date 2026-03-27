@@ -1,0 +1,93 @@
+
+{% extends 'base.html' %}
+{% block title %}Simple User Portal | MFCB{% endblock %}
+{% block content %}
+<section class="container">
+  <div class="page-header">
+    <span class="badge badge-soft">Simple User Portal</span>
+    <h1 class="mt-3">{{ c.client_name }}</h1>
+    <p class="text-muted">You can view only your linked profile and upload requested documents.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card soft-card">
+        <div class="card-body">
+          <div class="row g-3">
+            {% for label, value, cls in [
+              ('Case Type', c.case_type, ''),
+              ('Current Stage', c.current_stage, ''),
+              ('Case Status', c.case_status, c.case_status),
+              ('Payment Status', c.payment_status, c.payment_status),
+              ('Due Date', c.payment_due_date, ''),
+              ('Warning Note', c.payment_warning_note, 'pending'),
+              ('Documents Status', c.documents_status, c.documents_status),
+              ('Form Submitted', c.form_submitted, c.form_submitted),
+              ('Embassy Status', c.embassy_status, c.embassy_status),
+              ('Work Permit Status', c.work_permit_status, c.work_permit_status),
+              ('MOFA Status', c.mofa_status, c.mofa_status)
+            ] %}
+            <div class="col-md-6">
+              <div class="info-box">
+                <div class="small text-muted">{{ label }}</div>
+                {% if cls %}
+                <div><span class="status-chip status-{{ cls }}">{{ value }}</span></div>
+                {% else %}
+                <div class="fw-semibold">{{ value }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+            <div class="col-12"><div class="info-box"><div class="small text-muted">Notes</div><div>{{ c.notes }}</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card soft-card mt-4">
+        <div class="card-body">
+          <h4>Case Steps</h4>
+          <div class="timeline mt-3">
+            {% for s in c.case_steps %}
+            <div class="timeline-item">
+              <div class="timeline-point"></div>
+              <div class="timeline-content">
+                <div class="fw-bold">{{ s.step_name }}</div>
+                <div class="small text-muted">{{ s.step_date }} · {{ s.step_status }}</div>
+                <div>{{ s.step_note }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card soft-card">
+        <div class="card-body">
+          <h4>Upload Requested Document</h4>
+          <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_client_document', client_id=c.id) }}" class="row g-3">
+            <div class="col-12"><label class="form-label">Document Name</label><input name="document_name" class="form-control"></div>
+            <div class="col-12"><label class="form-label">File</label><input type="file" name="file" class="form-control"></div>
+            <div class="col-12"><label class="form-label">Notes</label><input name="notes" class="form-control"></div>
+            <div class="col-12 d-grid"><button class="btn btn-primary">Upload</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="card soft-card mt-4">
+        <div class="card-body">
+          <h4>Your Documents</h4>
+          {% for d in c.documents %}
+          <div class="doc-row">
+            <a href="{{ url_for('uploaded_file', filename=d.file_name) }}">{{ d.document_name }}</a>
+            <div class="small text-muted">{{ d.uploaded_by_role }} · {{ d.uploaded_at.strftime('%Y-%m-%d') }}</div>
+          </div>
+          {% else %}
+          <div class="text-muted">No files uploaded yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

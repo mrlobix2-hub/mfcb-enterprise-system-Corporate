@@ -1,0 +1,41 @@
+
+{% extends 'base.html' %}
+{% block title %}Access Portal | MFCB{% endblock %}
+{% block content %}
+<section class="container">
+  <div class="page-header text-center">
+    <span class="badge badge-soft">Access Portal</span>
+    <h1 class="mt-3">Secure entry points for executive, operational, and simple user access.</h1>
+    <p class="text-muted">No public credential hints are displayed. Each entry is separated according to authority and visibility requirements.</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card access-card h-100 executive-card">
+        <div class="card-body">
+          <h3>Corporate Special Access</h3>
+          <p class="text-muted">Premium executive sign-in designed for director-level control.</p>
+          <a href="{{ url_for('login', role='director') }}" class="btn btn-primary">Open Entry</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card access-card h-100">
+        <div class="card-body">
+          <h3>Manager Access</h3>
+          <p class="text-muted">Restricted operational entry for managerial work and controlled submissions.</p>
+          <a href="{{ url_for('login', role='manager') }}" class="btn btn-outline-primary">Open Entry</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card access-card h-100">
+        <div class="card-body">
+          <h3>Simple User</h3>
+          <p class="text-muted">Client-facing portal access with profile visibility and controlled document upload.</p>
+          <a href="{{ url_for('login', role='client') }}" class="btn btn-outline-primary">Open Entry</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

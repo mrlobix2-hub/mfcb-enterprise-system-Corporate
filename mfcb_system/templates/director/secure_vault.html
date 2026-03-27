@@ -1,0 +1,28 @@
+
+{% extends 'base.html' %}
+{% block title %}Secure Vault | MFCB{% endblock %}
+{% block content %}
+<section class="container">
+  <div class="page-header"><span class="badge badge-soft">Director Only</span><h1 class="mt-3">Secure Vault</h1></div>
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card soft-card"><div class="card-body">
+        <form method="post" class="row g-3">
+          {% for field in ['entry_category','label','url','username','password_value','bank_name','account_title','account_number','iban'] %}
+          <div class="col-12"><label class="form-label">{{ field|replace('_',' ')|title }}</label><input name="{{ field }}" class="form-control"></div>
+          {% endfor %}
+          <div class="col-12"><label class="form-label">Private Note</label><textarea name="private_note" class="form-control"></textarea></div>
+          <div class="col-12 form-check ms-2"><input class="form-check-input" type="checkbox" name="hidden_flag"><label class="form-check-label">Hidden Flag</label></div>
+          <div class="col-12 d-grid"><button class="btn btn-primary">Save Vault Entry</button></div>
+        </form>
+      </div></div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card soft-card"><div class="card-body table-responsive">
+        <table class="table"><thead><tr><th>Category</th><th>Label</th><th>URL</th><th>Username</th><th>Bank</th><th>Hidden</th></tr></thead>
+        <tbody>{% for v in items %}<tr><td>{{ v.entry_category }}</td><td>{{ v.label }}</td><td>{{ v.url }}</td><td>{{ v.username }}</td><td>{{ v.bank_name }}</td><td>{{ 'Yes' if v.hidden_flag else 'No' }}</td></tr>{% endfor %}</tbody></table>
+      </div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
