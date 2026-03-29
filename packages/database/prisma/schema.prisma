@@ -1,0 +1,342 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum DisputeCategory {
+  FINANCIAL
+  LEGAL
+  PERSONAL
+  REPUTATION
+}
+
+enum IdentityVerificationStatus {
+  VERIFIED
+  PARTIALLY_VERIFIED
+  UNVERIFIED
+}
+
+enum InteractionType {
+  CALL
+  MEETING
+  MESSAGE
+  LEGAL_NOTICE
+  PAYMENT_DISCUSSION
+}
+
+enum CaseStatus {
+  OPEN
+  INVESTIGATION
+  COURT
+  CLOSED
+  SETTLED
+}
+
+enum OutcomeStatus {
+  PENDING
+  WON
+  LOST
+  SETTLED
+}
+
+enum EvidenceSource {
+  SELF
+  LAWYER
+  THIRD_PARTY
+  AUTHORITY
+}
+
+enum EvidenceAuthenticity {
+  ORIGINAL
+  COPY
+  SCREENSHOT
+}
+
+enum ReliabilityLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ThreatType {
+  FINANCIAL
+  LEGAL
+  PHYSICAL
+  REPUTATION
+}
+
+enum RecoveryActionType {
+  CALL
+  MEETING
+  LEGAL_NOTICE
+  LAWYER_ACTION
+}
+
+enum RecoveryStatus {
+  PENDING
+  NEGOTIATION
+  LEGAL_RECOVERY
+  CLOSED
+}
+
+enum RecordStatus {
+  ACTIVE
+  LOCKED
+  DELETED
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  username               String    @unique
+  passwordHash           String
+  role                   UserRole  @default(ADMIN)
+  recoveryEmail          String?
+  securityQuestion       String?
+  securityAnswerHash     String?
+  mustChangePassword     Boolean   @default(true)
+  failedLoginAttempts    Int       @default(0)
+  lockedUntil            DateTime?
+  lastActivityAt         DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  auditLogs              AuditLog[]
+}
+
+model Person {
+  id                           String      @id @default(cuid())
+  recordId                     String      @unique
+  fullName                     String
+  alias                        String?
+  fatherName                   String?
+  cnic                         String?     @unique
+  passport                     String?     @unique
+  dateOfBirth                  DateTime?
+  phoneNumbers                 String[]
+  whatsapp                     String?
+  email                        String?
+  address                      String?
+  city                         String?
+  province                     String?
+  country                      String?
+  occupation                   String?
+  company                      String?
+  firstContactDate             DateTime?
+  contactSource                String?
+  referencePerson              String?
+  meetingHistory               String?
+  meetingLocations             String[]
+  witnessNames                 String[]
+  riskLevel                    RiskLevel   @default(LOW)
+  riskScore                    Int         @default(0)
+  disputeCategory              DisputeCategory?
+  totalAmountInvolved          Decimal?    @db.Decimal(14,2)
+  paidAmount                   Decimal?    @db.Decimal(14,2)
+  remainingAmount              Decimal?    @db.Decimal(14,2)
+  lossAmount                   Decimal?    @db.Decimal(14,2)
+  recoveryStatus               String?
+  firRecords                   String?
+  complaints                   String?
+  policeMatters                String?
+  courtCases                   String?
+  verificationStatus           IdentityVerificationStatus @default(UNVERIFIED)
+  verificationMethod           String?
+  tags                         String[]
+  notesEncrypted               String?
+  recordStatus                 RecordStatus @default(ACTIVE)
+  lockedAt                     DateTime?
+  deletedAt                    DateTime?
+  createdAt                    DateTime    @default(now())
+  updatedAt                    DateTime    @updatedAt
+  incidents                    Incident[]
+  interactions                 Interaction[]
+  activities                   Activity[]
+  cases                        LegalCase[]
+  documents                    Document[]
+  evidenceItems                Evidence[]
+  damages                      DamageAssessment[]
+  recoveryActions              RecoveryAction[]
+  costs                        CostEntry[]
+  meetings                     MeetingMinute[]
+}
+
+model Incident {
+  id              String   @id @default(cuid())
+  personId        String
+  incidentDate    DateTime
+  location        String
+  incidentType    String
+  description     String
+  personsInvolved String[]
+  financialImpact Decimal? @db.Decimal(14,2)
+  legalImpact     String?
+  evidenceIds     String[]
+  createdAt       DateTime @default(now())
+  person          Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model Interaction {
+  id         String          @id @default(cuid())
+  personId   String
+  date       DateTime
+  type       InteractionType
+  summary    String
+  tone       String?
+  outcome    String?
+  nextAction String?
+  createdAt  DateTime        @default(now())
+  person     Person          @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id                String   @id @default(cuid())
+  personId          String
+  date              DateTime
+  activityType      String
+  description       String
+  informationSource String?
+  evidence          String?
+  riskChange        String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  person            Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model LegalCase {
+  id                 String        @id @default(cuid())
+  recordId           String        @unique
+  personId           String
+  caseNumber         String?
+  firNumber          String?
+  policeStation      String?
+  investigatingOfficer String?
+  lawyerName         String?
+  courtName          String?
+  caseType           String?
+  status             CaseStatus    @default(OPEN)
+  firDate            DateTime?
+  courtDate          DateTime?
+  nextHearingDate    DateTime?
+  outcome            OutcomeStatus @default(PENDING)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  person             Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model FinancialTransaction {
+  id          String   @id @default(cuid())
+  personId    String
+  date        DateTime
+  amount      Decimal  @db.Decimal(14,2)
+  method      String
+  proof       String?
+  createdAt   DateTime @default(now())
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  recordId      String   @unique
+  personId      String?
+  fileName      String
+  filePath      String
+  mimeType      String
+  sizeInBytes   Int
+  tags          String[]
+  notes         String?
+  encrypted     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  deletedAt     DateTime?
+  person        Person?  @relation(fields: [personId], references: [id], onDelete: SetNull)
+}
+
+model Evidence {
+  id              String                @id @default(cuid())
+  personId        String?
+  documentId      String?
+  source          EvidenceSource
+  authenticity    EvidenceAuthenticity
+  reliability     ReliabilityLevel
+  strengthRating  Int
+  notes           String?
+  createdAt       DateTime              @default(now())
+  person          Person?               @relation(fields: [personId], references: [id], onDelete: SetNull)
+}
+
+model DamageAssessment {
+  id               String   @id @default(cuid())
+  personId         String
+  financialDamage  Decimal? @db.Decimal(14,2)
+  legalCosts       Decimal? @db.Decimal(14,2)
+  timeLossHours    Int?
+  reputationImpact String?
+  totalExposure    Decimal? @db.Decimal(14,2)
+  createdAt        DateTime @default(now())
+  person           Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model RecoveryAction {
+  id          String             @id @default(cuid())
+  personId    String
+  type        RecoveryActionType
+  status      RecoveryStatus     @default(PENDING)
+  description String?
+  createdAt   DateTime           @default(now())
+  person      Person             @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model CostEntry {
+  id         String   @id @default(cuid())
+  personId   String
+  category   String
+  amount     Decimal  @db.Decimal(14,2)
+  notes      String?
+  createdAt  DateTime @default(now())
+  person     Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model MeetingMinute {
+  id         String   @id @default(cuid())
+  personId   String
+  purpose    String
+  discussion String
+  outcome    String?
+  nextSteps  String?
+  createdAt  DateTime @default(now())
+  person     Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model Alert {
+  id         String   @id @default(cuid())
+  title      String
+  message    String
+  severity   RiskLevel
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  ipAddress  String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
